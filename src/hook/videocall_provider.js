@@ -23,12 +23,25 @@ export default function VideoCallProvider({ children }) {
 
   useEffect(() => {
     socket.on("answercall", (data) => {
-      console.log("inside ansewrcall", data);
 
       setIncomingCall(true);
       setpeer1data(data);
     });
-    return () => {};
+    socket.on("hangup", () => {
+      setIncomingCall(false)
+      setCallConnected(false)
+      setCalling(false)
+      if (myv.current.srcObject) {
+        myv.current.srcObject.getTracks().forEach(function (track) {
+          if (track.readyState === 'live' && track.kind === 'video') {
+            track.stop();
+
+          }
+        });
+      }
+      SetStream(null)
+    })
+    return () => { };
   }, []);
 
   const ShowCamera = () => {
@@ -39,7 +52,6 @@ export default function VideoCallProvider({ children }) {
   };
 
   const answerToOtherPerson = () => {
-    console.log("ssstream inside answercall", sstream);
     const peer2 = new Peer({
       initiator: false,
       trickle: false,
@@ -47,7 +59,6 @@ export default function VideoCallProvider({ children }) {
     });
 
     peer2.on("signal", (data) => {
-      console.log("Heya");
       socket.emit("answertocall", {
         answer: true,
         gameid: gameidcontext,
@@ -55,23 +66,16 @@ export default function VideoCallProvider({ children }) {
       });
     });
 
-    console.log("peer1data");
     setCallConnected(true);
     peer2.on("stream", (stream) => {
-      console.log("aag laga di", stream);
-
-      // got remote video stream, now let's show it in a video tag
       otherplayerv.current.srcObject = stream;
     });
-    console.log("peer1data", peer1data);
     peer2.signal(peer1data);
   };
 
   const CallOtherPerson = () => {
-    console.log("peer1 stream ", sstream);
     const peer1 = new Peer({
       initiator: true,
-
       trickle: false,
       stream: sstream,
     });
@@ -80,18 +84,35 @@ export default function VideoCallProvider({ children }) {
       socket.emit("callother", { gameid: gameidcontext, peerdata: data });
     });
     peer1.on("stream", (stream) => {
-      console.log("oh y god");
 
       otherplayerv.current.srcObject = stream;
     });
-    console.log("its rendering");
     setCalling(true);
     socket.on("replytocallrequest", (answer, peerdata) => {
-      console.log("hey", peerdata);
       peer1.signal(peerdata);
       setCallConnected(true);
     });
+
+
   };
+
+  const HangUp = () => {
+    setIncomingCall(false)
+    setCallConnected(false)
+    setCalling(false)
+    if (sstream) {
+      sstream.getTracks().forEach(function (track) {
+        if (track.readyState === 'live' && track.kind === 'video') {
+          track.stop();
+
+        }
+      });
+    }
+    SetStream(null)
+
+    socket.emit("hangup", { gameid: gameidcontext })
+  }
+
 
   return (
     <videoCallContext.Provider
@@ -105,6 +126,7 @@ export default function VideoCallProvider({ children }) {
         ShowCamera,
         incomingCall,
         callConnected,
+        HangUp
       }}
     >
       {children}

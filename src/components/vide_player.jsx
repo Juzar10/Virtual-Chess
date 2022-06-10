@@ -16,6 +16,8 @@ export const VideoPlayer = () => {
     incomingCall,
     ShowCamera,
     callConnected,
+    HangUp,
+
   } = useContext(videoCallContext);
 
   // const callConnected = true;
@@ -70,17 +72,15 @@ export const VideoPlayer = () => {
       )}
       {sstream !== null && calller && (
         <div
-          className={` ${
-            !callConnected ? `h-screen ` : ``
-          } flex flex-col justify-center items-center mt-4`}
+          className={` ${!callConnected ? `h-screen ` : ``
+            } flex flex-col justify-center items-center mt-4`}
         >
           <div
             id="temp"
-            className={`  bg-green-500  rounded-lg ${
-              !callConnected
+            className={`  bg-green-500  rounded-lg ${!callConnected
                 ? `w-5/6 h-2/3 flex justify-center `
                 : `w-56 h-36 absolute z-10 transform translate-y-34 translate-x-72`
-            } `}
+              } `}
           >
             {" "}
             <video clasName="w-full rounded-lg" ref={myv} autoPlay muted />
@@ -106,17 +106,15 @@ export const VideoPlayer = () => {
       )}
       {sstream !== null && !calller && (
         <div
-          className={` ${
-            !callConnected ? `h-screen ` : ``
-          } flex flex-col justify-center items-center mt-4`}
+          className={` ${!callConnected ? `h-screen ` : ``
+            } flex flex-col justify-center items-center mt-4`}
         >
           <div
             id="temp"
-            className={` bg-green-500 rounded-lg ${
-              !callConnected
+            className={` bg-green-500 rounded-lg ${!callConnected
                 ? `w-5/6 h-2/3 flex justify-center `
                 : `w-56 h-36 absolute z-10 transform translate-y-34 translate-x-72`
-            } `}
+              } `}
           >
             <video ref={myv} autoPlay muted />
           </div>
@@ -141,6 +139,7 @@ export const VideoPlayer = () => {
             {" "}
             <video ref={otherplayerv} autoPlay muted />
           </div>
+          <button class="h-10 px-5 m-2 text-red-100 transition-colors duration-150 bg-red-700 rounded-lg focus:shadow-outline hover:bg-red-800" onClick={HangUp}>End Call</button>
         </div>
       )}
     </div>
